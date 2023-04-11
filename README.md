@@ -1,6 +1,6 @@
 # jspsych Tutorial - Mental Rotation
 
-Video walking through this tutorial is available on [YouTube]().
+Video walking through this tutorial is available on [YouTube](https://youtu.be/eAZSmBj-Q44).
 
 The repository contains stimuli created by Ganis & Kievit (2015). These stimuli are publicly available, here are included only eight pictures for demostration. See https://osf.io/pn96e/ for the full stimulus set.
 
