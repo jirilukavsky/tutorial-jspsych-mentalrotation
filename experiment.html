@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My experiment</title>
+    <script src="https://unpkg.com/jspsych@7.3.2"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.2"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-image-keyboard-response@1.1.2"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-preload@1.1.2"></script>
+    <link href="https://unpkg.com/jspsych@7.3.2/css/jspsych.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body></body>
+  <script>
+
+    /* initialize jsPsych */
+    var jsPsych = initJsPsych({
+      on_finish: function() {
+        jsPsych.data.get().localSave('csv', 'mydata.csv');
+        jsPsych.data.displayData();
+      }
+    });
+
+    /* create timeline */
+    var timeline = [];
+
+    var preload = {
+        type: jsPsychPreload,
+        images: [
+            "stimuli/1_0.jpg", "stimuli/1_0_R.jpg", "stimuli/1_50.jpg", "stimuli/1_50_R.jpg", 
+            "stimuli/1_100.jpg", "stimuli/1_100_R.jpg", "stimuli/1_150.jpg", "stimuli/1_150_R.jpg", 
+        ]
+    };
+    timeline.push(preload);
+
+    /* define welcome message trial */
+    var welcome = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: "Welcome to the experiment. Press any key to begin."
+    };
+    timeline.push(welcome);
+
+    var rotation_trial = {
+        type: jsPsychImageKeyboardResponse,
+        stimulus: jsPsych.timelineVariable('stimulus'),
+        choices: ['f', 'j'],
+        prompt: "<p><b>F</b> stejné, <b>J</b> zrcadlové</p>",
+        data: {
+            expected: jsPsych.timelineVariable('expected'),
+        },
+        on_finish: function(data){
+            // Score the keyboard response as correct or incorrect.
+            if(jsPsych.pluginAPI.compareKeys(data.response, data.expected)){
+                data.correct = true;
+            } else {
+                data.correct = false; 
+            }
+        }
+    };
+    var feedback = {
+        type: jsPsychHtmlKeyboardResponse,
+        trial_duration: 800, 
+        stimulus: function(){
+            // The feedback stimulus is a dynamic parameter because we can't know in advance whether
+            // the stimulus should be 'correct' or 'incorrect'.
+            // Instead, this function will check the accuracy of the last response and use that information to set
+            // the stimulus value on each trial.
+            var last_trial_correct = jsPsych.data.get().last(1).values()[0].correct;
+            if (last_trial_correct){
+                return "<p>Correct!</p>"; // the parameter value has to be returned from the function
+            } else {
+                return "<p>Wrong.</p>"; // the parameter value has to be returned from the function
+            }
+        }
+    };
+    var rotation_trials = {
+        timeline: [ rotation_trial, feedback, ],
+        timeline_variables: [
+            { stimulus: "stimuli/1_0.jpg", expected: "f", }, 
+            { stimulus: "stimuli/1_0_R.jpg", expected: "j", }, 
+            { stimulus: "stimuli/1_50.jpg", expected: "f", }, 
+            { stimulus: "stimuli/1_50_R.jpg", expected: "j", }, 
+            { stimulus: "stimuli/1_100.jpg", expected: "f",}, 
+            { stimulus: "stimuli/1_100_R.jpg", expected: "j",}, 
+            { stimulus: "stimuli/1_150.jpg", expected: "f",}, 
+            { stimulus: "stimuli/1_150_R.jpg", expected: "j",}, 
+        ],
+        randomize_order: true, 
+    };
+    var bye = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: "Thank you for your participation. Press any key to download your data."
+    };
+
+    timeline.push(rotation_trials);
+    timeline.push(bye);
+
+    /* start the experiment */
+    jsPsych.run(timeline);
+
+  </script>
+</html>
